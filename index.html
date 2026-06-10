@@ -51,6 +51,31 @@
     from{transform:translate(0,0)}
     to{transform:translate(var(--dx,40px),var(--dy,-60px))}
   }
+  /* ---------- estrellas fugaces ---------- */
+  .fugaz{
+    position:absolute;width:130px;height:2px;border-radius:2px;
+    background:linear-gradient(90deg,rgba(255,255,255,.95),rgba(233,200,127,.5),transparent);
+    box-shadow:0 0 8px rgba(255,255,255,.6);
+    transform:rotate(var(--ang,-35deg));
+    animation:cruzar var(--dur,1.4s) ease-out forwards;
+    pointer-events:none;
+  }
+  @keyframes cruzar{
+    0%{opacity:0;translate:0 0}
+    8%{opacity:1}
+    100%{opacity:0;translate:var(--tx,-340px) var(--ty,240px)}
+  }
+  .destello{
+    position:fixed;width:10px;height:10px;border-radius:50%;z-index:2;
+    background:radial-gradient(circle,#fff 0%,var(--oro) 45%,transparent 70%);
+    box-shadow:0 0 18px 6px rgba(233,200,127,.55);
+    animation:brillar 1.1s ease-out forwards;pointer-events:none;
+  }
+  @keyframes brillar{
+    0%{opacity:1;transform:scale(.3)}
+    60%{opacity:.9;transform:scale(1.4)}
+    100%{opacity:0;transform:scale(.4) translateY(-26px)}
+  }
   /* ---------- estructura ---------- */
   main{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:0 1.4rem}
   /* ---------- hero ---------- */
@@ -60,8 +85,9 @@
     padding:4rem 0 3rem;
   }
   .eyebrow{
-    font-size:.78rem;letter-spacing:.42em;text-transform:uppercase;
-    color:var(--oro);margin-bottom:1.6rem;
+    font-size:clamp(1.05rem,3.5vw,1.4rem);letter-spacing:.32em;text-transform:uppercase;
+    color:var(--oro);margin-bottom:1.6rem;font-weight:600;
+    text-shadow:0 0 24px rgba(233,200,127,.35);
     animation:aparecer 1.6s ease both;
   }
   h1{
@@ -165,8 +191,13 @@
     max-width:30ch;margin:0 auto;color:var(--blanco-suave);
   }
   .despedida .firma{
-    margin-top:1.6rem;font-family:'Karla',sans-serif;font-style:normal;
-    font-size:.8rem;letter-spacing:.34em;text-transform:uppercase;color:var(--oro);
+    margin-top:1.8rem;font-family:'Cormorant Garamond',serif;font-style:normal;
+    font-size:clamp(1.3rem,5vw,1.8rem);letter-spacing:.14em;text-transform:uppercase;
+    font-weight:600;
+    background:linear-gradient(90deg,#f5d795,#ffefc9,#f5d795);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 30px rgba(245,215,149,.35);
+    filter:drop-shadow(0 0 14px rgba(245,215,149,.45));
   }
   /* ---------- música ---------- */
   #btnMusica{
@@ -256,7 +287,7 @@
       <div class="gran-fecha">Viernes 25 de julio</div>
       <div class="hora">2:00 de la tarde</div>
       <div class="botones">
-        <a class="btn btn-oro" href="https://maps.app.goo.gl/LAf7qieT6TVhXpGB7?g_st=aw" target="_blank" rel="noopener">📍 Ver ubicación</a>
+        <a class="btn btn-oro" href="https://maps.app.goo.gl/na7okPWKT2Ghn21Q8?g_st=aw" target="_blank" rel="noopener">📍 Ver ubicación</a>
         <a class="btn btn-borde" id="btnCalendario" href="#" download="invitacion-25-julio.ics">🗓️ Agregar al calendario</a>
       </div>
     </div>
@@ -304,6 +335,45 @@
   }
 })();
 
+/* ---------- estrellas fugaces automáticas e interactivas ---------- */
+(function(){
+  const cielo=document.getElementById('cielo');
+  const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce) return;
+  function lanzarFugaz(x,y){
+    const f=document.createElement('div');
+    f.className='fugaz';
+    const izq = x!==undefined ? x : (15+Math.random()*75);
+    const top = y!==undefined ? y : (Math.random()*45);
+    f.style.left=izq+'%';
+    f.style.top=top+'%';
+    const ang=-(25+Math.random()*20);
+    f.style.setProperty('--ang',ang+'deg');
+    f.style.setProperty('--tx',-(220+Math.random()*260)+'px');
+    f.style.setProperty('--ty',(150+Math.random()*180)+'px');
+    f.style.setProperty('--dur',(1+Math.random()*.9)+'s');
+    cielo.appendChild(f);
+    setTimeout(()=>f.remove(),2200);
+  }
+  /* fugaces automáticas cada pocos segundos */
+  (function programar(){
+    lanzarFugaz();
+    if(Math.random()<.4) setTimeout(()=>lanzarFugaz(),500+Math.random()*700);
+    setTimeout(programar,2800+Math.random()*3500);
+  })();
+  /* interactivo: al tocar/clic aparece un destello y una fugaz cercana */
+  document.addEventListener('pointerdown',e=>{
+    if(e.target.closest('a,button')) return;
+    const d=document.createElement('div');
+    d.className='destello';
+    d.style.left=(e.clientX-5)+'px';
+    d.style.top=(e.clientY-5)+'px';
+    document.body.appendChild(d);
+    setTimeout(()=>d.remove(),1200);
+    lanzarFugaz((e.clientX/innerWidth)*100,(e.clientY/innerHeight)*70);
+  });
+})();
+
 /* ---------- aparición de motivos al hacer scroll ---------- */
 (function(){
   const obs=new IntersectionObserver(es=>{
@@ -340,16 +410,19 @@
     'DTEND;TZID=America/Mexico_City:20260725T200000',
     'SUMMARY:Acción de Gracias · Familia Quiroz Hernández',
     'DESCRIPTION:Celebración: 18 años y graduación de Estrella Michel\\, cumpleaños de Graciela y Brayan Alejandro\\, y la casa de Yair Asael.',
-    'LOCATION:https://maps.app.goo.gl/LAf7qieT6TVhXpGB7',
+    'LOCATION:https://maps.app.goo.gl/na7okPWKT2Ghn21Q8',
     'END:VEVENT','END:VCALENDAR'].join('\r\n');
   const blob=new Blob([ics],{type:'text/calendar'});
   document.getElementById('btnCalendario').href=URL.createObjectURL(blob);
 })();
 
-/* ---------- música ambiental suave (Web Audio) ---------- */
+/* ---------- música de fondo ----------
+   Reproduce el archivo "musica.mp3" que esté junto a este index.html en el repositorio.
+   Si el archivo no existe, usa acordes ambientales suaves generados como respaldo. */
 (function(){
   const btn=document.getElementById('btnMusica');
-  let ctx=null,master=null,activo=false,timer=null;
+  let audio=null,activo=false;
+  let ctx=null,master=null,timer=null,usandoRespaldo=false;
   const acordes=[[261.63,329.63,392.00,523.25],[220.00,261.63,329.63,440.00],
                  [174.61,220.00,261.63,349.23],[196.00,246.94,293.66,392.00]];
   let idx=0;
@@ -367,15 +440,28 @@
     });
     timer=setTimeout(tocarAcorde,9000);
   }
+  function respaldo(){
+    usandoRespaldo=true;
+    if(!ctx){ ctx=new (window.AudioContext||window.webkitAudioContext)();
+      master=ctx.createGain(); master.gain.value=.6; master.connect(ctx.destination); }
+    ctx.resume(); tocarAcorde();
+  }
   btn.addEventListener('click',()=>{
     if(!activo){
-      if(!ctx){ ctx=new (window.AudioContext||window.webkitAudioContext)();
-        master=ctx.createGain(); master.gain.value=.6; master.connect(ctx.destination); }
-      ctx.resume(); tocarAcorde();
-      btn.classList.add('activo'); btn.textContent='♪'; btn.style.opacity='1';
+      if(!audio && !usandoRespaldo){
+        audio=new Audio('musica.mp3');
+        audio.loop=true; audio.volume=.45;
+        audio.play().catch(()=>{ audio=null; respaldo(); });
+      }else if(audio){
+        audio.play();
+      }else{
+        respaldo();
+      }
+      btn.classList.add('activo');
       activo=true;
     }else{
-      clearTimeout(timer); ctx.suspend();
+      if(audio) audio.pause();
+      if(usandoRespaldo){ clearTimeout(timer); ctx.suspend(); }
       btn.classList.remove('activo');
       activo=false;
     }
